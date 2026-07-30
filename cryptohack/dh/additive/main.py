@@ -4,7 +4,12 @@ from Crypto.Util.number import long_to_bytes, bytes_to_long
 import hashlib
 from pwn import *
 import json
-
+'''
+in an additive group we have a*g mod p insteaad of g^a mod p.
+|🗲 insight:
+we just find the inverse of g mod p, we compute it, and we have the private exponent
+we can compute the key by computing then a*B and decrypt the flag
+'''
 io = remote("socket.cryptohack.org", 13380)
 def is_pkcs7_padded(message):
     padding = message[-message[-1]:]
