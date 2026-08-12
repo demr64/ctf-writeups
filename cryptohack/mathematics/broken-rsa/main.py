@@ -5,7 +5,7 @@ ed - phi = 1
 2k*d - 2z = 1
 2 | 1 is false, therefore d does not exist.
 -> print(isPrime(n))
-|🗲 insight:
+**insight:
 n is prime and not a product of two primes
 we can use tonelli shanks algorithm to find the roots and list them all
 '''

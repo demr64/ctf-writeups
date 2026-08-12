@@ -1,18 +1,14 @@
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
-from Crypto.Util.number import long_to_bytes, bytes_to_long
+from Crypto.Util.number import long_to_bytes, bytes_to_long, getPrime
 import hashlib
 from pwn import *
 import json
+from sage.all import *
 
 '''
-Alice and Bob have share their values, B, g, p, A and the ct, iv.
-
-**insight:
-When talking to Bob we notice that if we send g = A, A = 1 then
-Bob will compute it's private key as 1^b = 1 mod p, but when talking to us:
-A^b = secret mod p
-which is the secret we needed to decrypt their old messages.
+**insight
+this is a small group confinement attack so we may just use pohlig hellman with another very smooth prime
 '''
 
 def is_pkcs7_padded(message):
@@ -38,27 +34,39 @@ def decrypt_flag(shared_secret: int, iv: str, ciphertext: str):
         return plaintext.decode('ascii')
 
 def solve():
-    io = remote("socket.cryptohack.org", 13373)
+    io = remote("socket.cryptohack.org", 13378)
 
     d = json.JSONDecoder()
     #ALIce
     l = io.recvuntil(b"}").decode()
     i, end = d.raw_decode(l[(l.find("{")):])
     p = i['p']
+    intp = bytes_to_long(bytes.fromhex(p[2:]))
     g = i['g']
     A = i['A']
     l = io.recvuntil(b"}").decode()
     i, end = d.raw_decode(l[(l.find("{")):])
     B = i['B']
+    intB = bytes_to_long(bytes.fromhex(B[2:]))
+
     l = io.recvuntil(b"}").decode()
     i, end = d.raw_decode(l[(l.find("{")):])
     iv = i['iv']
-    ct = i['encrypted']
-    s = {'p':p, 'g':A, 'A':hex(1)}
-    io.sendline(json.dumps(s).encode())
+    flag = i['encrypted']
+    print(i)
+    fake = 74780951352567738838476507203405198502291020468903961016122955937936930303397056351356066320584550093532063720734114191579292432663668412364209738792084486694662127221352467512968642785275502014161326684993365993179874999143520288604119066614708346782458193276297353061079986185981636414551007141277290493746035023464491835024158471527094919603144242726157747682376730941361058786503236831187956531223094015787268326397222420316009142960518056827823806075414379601761263723454336658559
+    F = GF(fake)
+    dump = {'p':hex(fake), 'g':hex(2), 'A':A}
+    io.sendline(json.dumps(dump).encode())
     l = io.recvuntil(b"}").decode()
     i, end = d.raw_decode(l[(l.find("{")):])
-    Ab = i['B']
-    print(decrypt_flag(bytes_to_long(bytes.fromhex(Ab[2:])), iv, ct))
+    print(i)
+    B = i['B']
+    l = io.recvuntil(b"}").decode()
+    i, end = d.raw_decode(l[(l.find("{")):])
+    ds = discrete_log(F(int(B[2:], 16)), F(2))
+    print(ds)
+    print(decrypt_flag(pow(int(A[2:], 16), int(ds), intp), iv, flag))
 solve()
+
 

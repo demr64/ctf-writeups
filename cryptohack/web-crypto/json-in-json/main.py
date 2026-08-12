@@ -1,0 +1,3 @@
+
+evil = "{'admin':True}"
+

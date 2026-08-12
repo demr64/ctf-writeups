@@ -6,7 +6,7 @@ from pwn import *
 import json
 '''
 in an additive group we have a*g mod p insteaad of g^a mod p.
-|🗲 insight:
+**insight:
 we just find the inverse of g mod p, we compute it, and we have the private exponent
 we can compute the key by computing then a*B and decrypt the flag
 '''

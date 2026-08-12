@@ -8,7 +8,7 @@ a^x = 588
 a^(x+1) = 655
 ...
 a^(x+n) = 237
-|🗲 insight:
+**insight:
 a^x * (a^(-x-1)) = a^(-1) mod p ->
 found a.
 '''
